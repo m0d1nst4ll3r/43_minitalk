@@ -10,9 +10,11 @@ Ran tests on buffer, everything is always properly freed even in case of errors.
 
 Simplified macros so there are less values to modify. Used the lowest values that do not cause errors.
 The lower the values, the faster the program, but the more errors creep up. There are 2 types of errors:
-	1. Too little delay when sending PID causes bad PID according to server. Bits get mixed up and server can eventually write a "valid" PID that is negative, or much too high.
-	   This can theoretically be improved by not accepting 32 bits of PID but 15 instead as I did last time, but depending on the arch of your system, you might have up to 22-bit PIDs apparently, so I'm remiss about changing that.
-	2. Too little delay when sending msg causes extra bits to get received. If extra bits are multiple of 8, server might print a bad message, or it might just timeout otherwise. Currently, client has no way of knowing whether this happened.
+
+1. Too little delay when sending PID causes bad PID according to server. Bits get mixed up and server can eventually write a "valid" PID that is negative, or much too high.
+	This can theoretically be improved by not accepting 32 bits of PID but 15 instead as I did last time, but depending on the arch of your system, you might have up to 22-bit PIDs apparently, so I'm remiss about changing that.
+2. Too little delay when sending msg causes extra bits to get received. If extra bits are multiple of 8, server might print a bad message, or it might just timeout otherwise. Currently, client has no way of knowing whether this happened.
+	
 I could fix these (see ideas below) but choosing proper delay values already makes it virtually impossible for any errors to happen.
 I'm moving on to other projects but when I do come back to this one, I might do a complete re-write or think up crazy improvements that could be super fun to implement.
 
