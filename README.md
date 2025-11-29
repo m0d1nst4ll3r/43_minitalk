@@ -18,6 +18,8 @@ The lower the values, the faster the program, but the more errors creep up. Ther
 I could fix these (see ideas below) but choosing proper delay values already makes it virtually impossible for any errors to happen.
 I'm moving on to other projects but when I do come back to this one, I might do a complete re-write or think up crazy improvements that could be super fun to implement.
 
+PS: Program doesn't *quite* work when starting several client processes together (`./client pid message &; ./client pid message &`). Not completely sure how to address that. Server will be bombarded by signals and cannot know which signal comes from which client. The server currently fails dramatically, getting random (sometimes negative) pids, and writing random messages. A quick fix would be that after receiving a (valid, non-negative) pid, and after sending a confirmation to the client, the client would reply with a "confirmation byte" to start the message. The confirmation byte can be anything, like 8 zeros or 8 ones or anything in between. If the server doesn't receive that exact byte from the client, then there is a problem and the message transmission does not start. Another possible idea is to transmit 4 bytes (an int), which will be interpreted by the server as the amount of bytes it should expect. If the server does not receive exactly that many bytes, there was an error somewhere. This is quite a simple fix for current shortcomings.
+
 
 
 ### Quick improvements that I can make
