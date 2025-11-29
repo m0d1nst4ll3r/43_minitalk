@@ -21,6 +21,26 @@ I'm moving on to other projects but when I do come back to this one, I might do 
 PS: Program doesn't *quite* work when starting several client processes together (`./client pid message &; ./client pid message &`). Not completely sure how to address that. Server will be bombarded by signals and cannot know which signal comes from which client. The server currently fails dramatically, getting random (sometimes negative) pids, and writing random messages. A quick fix would be that after receiving a (valid, non-negative) pid, and after sending a confirmation to the client, the client would reply with a "confirmation byte" to start the message. The confirmation byte can be anything, like 8 zeros or 8 ones or anything in between. If the server doesn't receive that exact byte from the client, then there is a problem and the message transmission does not start. Another possible idea is to transmit 4 bytes (an int), which will be interpreted by the server as the amount of bytes it should expect. If the server does not receive exactly that many bytes, there was an error somewhere. This is quite a simple fix for current shortcomings.
 
 
+### Rewrite
+
+Rewriting a couple things:
+
+0. Client sends PID as usual
+1. Client should send a confirmation byte to server to make sure comms are clear, right after receiving PID confirmation from server
+2. Client should then send msg length, this will help strengthen error detection
+3. Client sends msg as usual
+4. Server should send non-standard signal after it has enough bytes (as received before)
+5. Client should react in one of 3 ways:
+	- Confirmation was sent too early, there were extra bits mixed in, abort (server will abort too)
+	- Confirmation was not sent when it should, some bits were missed, abort (server will abort too)
+	- Confirmation was sent at the right time, send one last full byte to tell the server all is good
+
+Additionally, server should check PID after receiving it (negative PID, or greater than defined limit).
+
+This should fix most issues the program currently has, especially when multiple clients are run together and their bits are jumbled.
+
+Currently, client has been rewritten but not server, and changes have not been tested.
+
 
 ### Quick improvements that I can make
 

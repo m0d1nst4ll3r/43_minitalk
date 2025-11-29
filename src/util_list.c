@@ -6,7 +6,7 @@
 /*   By: rapohlen <rapohlen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/21 11:53:36 by rapohlen          #+#    #+#             */
-/*   Updated: 2025/10/22 16:30:48 by rapohlen         ###   ########.fr       */
+/*   Updated: 2025/11/27 17:15:14 by rapohlen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,11 +52,11 @@ void	lst_clear(t_buf **lst)
 void	lst_print(t_buf *lst, int client)
 {
 	if (VERBOSE)
-		printf("Message from %d :\n", client);
+		ft_printf("Message from %d :\n", client);
 	while (lst)
 	{
-		printf("%s", lst->buf);
+		ft_printf("%s", lst->buf);
 		lst = lst->next;
 	}
-	printf("\n");
+	ft_printf("\n");
 }

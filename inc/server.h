@@ -6,7 +6,7 @@
 /*   By: rapohlen <rapohlen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/19 18:34:58 by rapohlen          #+#    #+#             */
-/*   Updated: 2025/10/22 16:30:59 by rapohlen         ###   ########.fr       */
+/*   Updated: 2025/11/29 18:39:58 by rapohlen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,10 +15,9 @@
 
 # include "minitalk.h"
 
-# define S_MSG_TIMEOUT	" -- Lost connection to client... Aborting\n"
-# define S_PID_TIMEOUT	" -- Received incomplete PID... Aborting\n"
 # define CHUNKSIZE		1000
-# define S_RESPONSE		SIGUSR1
+# define S_PING			SIGUSR1
+# define S_END			SIGUSR2
 
 typedef struct s_buf
 {

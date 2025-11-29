@@ -6,7 +6,7 @@
 /*   By: rapohlen <rapohlen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/19 18:31:49 by rapohlen          #+#    #+#             */
-/*   Updated: 2025/10/22 16:29:25 by rapohlen         ###   ########.fr       */
+/*   Updated: 2025/11/29 17:09:20 by rapohlen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,7 @@ static void	send_pid(int server, int client)
 	}
 }
 
-void	send_pid_repeat(int server)
+int	send_pid_repeat(int server)
 {
 	int	client;
 	int	attempts;
@@ -48,10 +48,11 @@ void	send_pid_repeat(int server)
 		attempts++;
 	}
 	if (attempts >= MAX_TRIES)
-		c_pid_timeout();
+		return (1);
+	return (0);
 }
 
-static void	send_byte(int server, char byte)
+int	send_byte(int server, char byte)
 {
 	int	i;
 	int	attempts;
@@ -66,27 +67,35 @@ static void	send_byte(int server, char byte)
 			kill(server, BIT_0);
 		if (!g_response)
 			usleep(MSG_WAIT);
-		if (g_response)
+		if (g_response == 1)
 		{
 			g_response = 0;
 			attempts = 0;
 			i--;
 		}
+		else if (g_response == 2)
+			return (2);
 		else
 			if (++attempts >= MAX_TRIES)
-				c_msg_timeout();
+				return (1);
 	}
+	return (0);
 }
 
-void	send_msg(int server, char *msg)
+int	send_msg(int server, char *msg)
 {
 	int	i;
+	int	ret;
 
 	i = 0;
-	while (msg[i])
+	while (1)
 	{
-		send_byte(server, msg[i]);
+		ret = send_byte(server, msg[i]);
+		if (ret)
+			return (ret);
+		if (!msg[i])
+			break ;
 		i++;
 	}
-	send_byte(server, 0);
+	return (0);
 }

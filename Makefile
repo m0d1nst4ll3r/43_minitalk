@@ -6,12 +6,12 @@
 #    By: rapohlen <rapohlen@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/10/08 10:29:07 by rapohlen          #+#    #+#              #
-#    Updated: 2025/11/27 13:27:34 by rapohlen         ###   ########.fr        #
+#    Updated: 2025/11/27 17:22:27 by rapohlen         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 CC			= cc
-CFLAGS		= -Wall -Wextra -Werror -Iinc
+CFLAGS		= -Wall -Wextra -Werror -Iinc -Ilibft/inc
 
 SRCDIR		= src/
 
@@ -25,20 +25,28 @@ OBJ			= $(SRC:.c=.o)
 
 NAME_S		= server
 NAME_C		= client
-NAME		= $(NAME_S) $(NAME_C)
+NAME		= $(NAME_C) $(NAME_S)
+
+LIB			= libft/libft.a
 
 all:		$(NAME)
 
+bonus:		all
+
 $(NAME_S):	$(OBJ_S) $(OBJ)
-			$(CC) $(CFLAGS) -o $@ $^
+			make -C libft
+			$(CC) $(CFLAGS) -o $@ $^ $(LIB)
 
 $(NAME_C):	$(OBJ_C) $(OBJ)
-			$(CC) $(CFLAGS) -o $@ $^
+			make -C libft
+			$(CC) $(CFLAGS) -o $@ $^ $(LIB)
 
 clean:
+			make clean -C libft
 			rm -f $(OBJ_S) $(OBJ_C) $(OBJ)
 
 fclean:		clean
+			make fclean -C libft
 			rm -f $(NAME)
 
 re:			fclean all
