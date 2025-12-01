@@ -6,7 +6,7 @@
 /*   By: rapohlen <rapohlen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/29 15:30:36 by rapohlen          #+#    #+#             */
-/*   Updated: 2025/11/29 16:33:33 by rapohlen         ###   ########.fr       */
+/*   Updated: 2025/12/01 11:10:36 by rapohlen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,5 +16,6 @@ void	error(char *err)
 {
 	if (VERBOSE_ERR)
 		ft_fprintf(2, "%s\n", err);
-	exit(1);
+	if (CLIENT)
+		exit(1);
 }

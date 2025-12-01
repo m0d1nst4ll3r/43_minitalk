@@ -1,55 +1,22 @@
-# 43_minitalk
+# 43\_minitalk
 
 ### Notes
 
-Project works right now. It is pretty much what I did last time around.
-I'm using printf since I haven't recoded it yet. Will change.
+Project went through a quick rewrite. Before, the server wouldn't verify much (not even if pid was < 0). The message would also be stored in a chained list.
 
-Message is written to a buffer (in a chained list with CHUNKSIZE macro).
-Ran tests on buffer, everything is always properly freed even in case of errors.
+Now, the server verifies the PID, the server and client share a single handshake byte (this catches most errors), the client shares message length with the server (this allows us to skip the chained list and simply malloc), and the server tells the client when it's done filling its string so the client can know if the server desynched. The client and server then share a last handshake byte before the server finally prints everything.
 
-Simplified macros so there are less values to modify. Used the lowest values that do not cause errors.
-The lower the values, the faster the program, but the more errors creep up. There are 2 types of errors:
+This way of doing things catches 100% of errors even when the server is bombarbed with random data from multiple clients, whereas before the server could catch bad PIDs and write bad messages.
 
-1. Too little delay when sending PID causes bad PID according to server. Bits get mixed up and server can eventually write a "valid" PID that is negative, or much too high.
-	This can theoretically be improved by not accepting 32 bits of PID but 15 instead as I did last time, but depending on the arch of your system, you might have up to 22-bit PIDs apparently, so I'm remiss about changing that.
-2. Too little delay when sending msg causes extra bits to get received. If extra bits are multiple of 8, server might print a bad message, or it might just timeout otherwise. Currently, client has no way of knowing whether this happened.
-	
-I could fix these (see ideas below) but choosing proper delay values already makes it virtually impossible for any errors to happen.
-I'm moving on to other projects but when I do come back to this one, I might do a complete re-write or think up crazy improvements that could be super fun to implement.
+We could skip the handshake parts, especially the first, but in case of errors it will just catch them faster, and the performance hit is trivial for such a simple project.
 
-PS: Program doesn't *quite* work when starting several client processes together (`./client pid message &; ./client pid message &`). Not completely sure how to address that. Server will be bombarded by signals and cannot know which signal comes from which client. The server currently fails dramatically, getting random (sometimes negative) pids, and writing random messages. A quick fix would be that after receiving a (valid, non-negative) pid, and after sending a confirmation to the client, the client would reply with a "confirmation byte" to start the message. The confirmation byte can be anything, like 8 zeros or 8 ones or anything in between. If the server doesn't receive that exact byte from the client, then there is a problem and the message transmission does not start. Another possible idea is to transmit 4 bytes (an int), which will be interpreted by the server as the amount of bytes it should expect. If the server does not receive exactly that many bytes, there was an error somewhere. This is quite a simple fix for current shortcomings.
+Note that the handshake can possibly succeed even with jumbled bits (it is only 8 bits after all), in which case the server will read an erroneous message length and possibly try to malloc absurd amounts of memory. It might allocate a very large amount of memory (but not large enough for malloc to fail) and continue writing in there as long as it's receiving bits. However as soon as it stops receiving bits for some milliseconds, it will abort and free the memory.
 
+### Quick improvement ideas
 
-### Rewrite
+...
 
-Rewriting a couple things:
-
-0. Client sends PID as usual
-1. Client should send a confirmation byte to server to make sure comms are clear, right after receiving PID confirmation from server
-2. Client should then send msg length, this will help strengthen error detection
-3. Client sends msg as usual
-4. Server should send non-standard signal after it has enough bytes (as received before)
-5. Client should react in one of 3 ways:
-	- Confirmation was sent too early, there were extra bits mixed in, abort (server will abort too)
-	- Confirmation was not sent when it should, some bits were missed, abort (server will abort too)
-	- Confirmation was sent at the right time, send one last full byte to tell the server all is good
-
-Additionally, server should check PID after receiving it (negative PID, or greater than defined limit).
-
-This should fix most issues the program currently has, especially when multiple clients are run together and their bits are jumbled.
-
-Currently, client has been rewritten but not server, and changes have not been tested.
-
-
-### Quick improvements that I can make
-
-- Make server send a final confirmation signal to indicate that the string is received, and correct.
-	- This fixes the client thinking the message was properly sent when the server actually skipped some bits and an "incomplete" message was detected. Client should just usleep for a set delay after receiving last response, and server should just send a last response before printing (or none if not). Client will know whether the server got a full message or not.
-
-
-
-### Complete rewrites or fun stuff I could do
+### Complete rewrites or fun stuff we could do
 
 - Do the project with 1 signal
 	- The absence of a signal is a signal. It should be doable with only 1 signal. But I haven't thought about how to implement a frequency that both programs will use to send/receive. And you need a certain encoding to start a message since the absence of a signal can be 0's.
@@ -57,4 +24,4 @@ Currently, client has been rewritten but not server, and changes have not been t
 - Use a different encoding. I'm encoding bits as 0 = SIGUSR1 and 1 = SIGUSR2, but this has limitations. There are other ways to encode, such as 0 = SIGUSR1 SIGUSR1 and 1 = SIGUSR2 SIGUSR2. There can also be rules, such as a 0 preceded by a 0 has a different sequence such as SIGUSR1 SIGUSR2.
   The point of this is to better handle errors and skipped bits. The way I did the project is the most basic naive approach. But there must be better ways to do it that allow for much more robust communication protocols between client and server, with almost no potential for miscommunication.
 
-- It can also be possible for the server to send a byte to the client as a confirmation. If I do this, my communication is already much more robust than what I did, but the speed is halved. And also, errors are still possible if by chance a bad byte sent back to the client becomes good again due to errors.
+- It can also be possible for the server to send back the byte it got to the client as a confirmation. If I do this, my communication is already much more robust than what I did, but the speed is halved. And also, errors are still possible if by chance a bad byte sent back to the client becomes good again due to errors. This would also allow the client to backtrack and possibly correct errors. In fact, this could make a server-client communication channel very resilient to noise as long as the server got the client's PID.

@@ -1,27 +1,25 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   client_error.c                                     :+:      :+:    :+:   */
+/*   server_print.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: rapohlen <rapohlen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/10/19 18:34:15 by rapohlen          #+#    #+#             */
-/*   Updated: 2025/11/27 17:14:36 by rapohlen         ###   ########.fr       */
+/*   Created: 2025/12/01 12:18:30 by rapohlen          #+#    #+#             */
+/*   Updated: 2025/12/01 12:18:48 by rapohlen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "client.h"
+#include "minitalk.h"
 
-void	c_pid_timeout(void)
+void	print_pid(void)
 {
-	if (VERBOSE)
-		ft_printf(C_PID_TIMEOUT);
-	exit(1);
+	ft_printf("PID : %d\n", getpid());
 }
 
-void	c_msg_timeout(void)
+void	print_msg(char *msg, int client)
 {
 	if (VERBOSE)
-		ft_printf(C_MSG_TIMEOUT);
-	exit(2);
+		ft_printf("Message received from : %d\n", client);
+	ft_printf("%s\n", msg);
 }

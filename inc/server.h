@@ -6,7 +6,7 @@
 /*   By: rapohlen <rapohlen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/19 18:34:58 by rapohlen          #+#    #+#             */
-/*   Updated: 2025/11/29 18:39:58 by rapohlen         ###   ########.fr       */
+/*   Updated: 2025/12/01 20:23:23 by rapohlen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,29 +15,31 @@
 
 # include "minitalk.h"
 
-# define CHUNKSIZE		1000
-# define S_PING			SIGUSR1
-# define S_END			SIGUSR2
-
-typedef struct s_buf
-{
-	char			buf[CHUNKSIZE + 1];
-	struct s_buf	*next;
-}	t_buf;
+# define ERR_SPID		"Received bad PID"
+# define ERR_SPIDINC	"Received incomplete PID"
+# define ERR_SNOSTART	"Lost client during first handshake"
+# define ERR_SBADSTART	"Received bad handshake"
+# define ERR_SNOLEN		"Lost client while receiving length"
+# define ERR_SBADLEN	"Received bad length"
+# define ERR_SMSG		"Lost client while receiving message"
+# define ERR_SEARLY		"Client did not confirm full receipt"
+# define ERR_SNOEND		"Lost client during last handshake"
+# define ERR_SBADEND	"Received bad last handshake"
+# define ERR_SMALLOC	"Malloc failed"
 
 extern int	g_bit;
 
-// util_lst.c
-t_buf	*lst_add_back(t_buf **lst);
-void	lst_clear(t_buf **lst);
-void	lst_print(t_buf *lst, int client);
-
-// server_error.c
-void	s_msg_timeout(void);
-void	s_pid_timeout(void);
+// server_loop.c
+void	server_loop(void);
 
 // server_receive.c
 int		receive_pid(void);
-int		receive_msg(int client, t_buf **list);
+int		receive_byte(int client, char *byte);
+int		receive_msg(int client, char **msg, int msg_len);
+int		receive_msg_len(int client, int *msg_len);
+
+// server_print.c
+void	print_pid(void);
+void	print_msg(char *msg, int client);
 
 #endif

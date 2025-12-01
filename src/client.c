@@ -6,7 +6,7 @@
 /*   By: rapohlen <rapohlen@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/19 12:20:27 by rapohlen          #+#    #+#             */
-/*   Updated: 2025/11/29 18:38:13 by rapohlen         ###   ########.fr       */
+/*   Updated: 2025/12/01 20:38:25 by rapohlen         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,10 +16,20 @@ int	g_response = 0;
 
 static void	sigusr_handler(int signum)
 {
-	if (signum == S_PING)
-		g_response = 1;
-	else if (signum == S_END)
-		g_response = 2;
+	if (!g_response)
+	{
+		if (signum == S_PING)
+			g_response = 1;
+		else if (signum == S_END)
+			g_response = 2;
+	}
+}
+
+static void	error(char *err)
+{
+	if (VERBOSE_ERR)
+		ft_fprintf(2, "%s\n", err);
+	exit(1);
 }
 
 static int	receive_end_signal(void)
@@ -31,8 +41,11 @@ static int	receive_end_signal(void)
 	{
 		if (!g_response)
 			usleep(MSG_WAIT);
-		if (g_response == S_END)
+		if (g_response == 2)
+		{
+			g_response = 0;
 			return (0);
+		}
 		attempts++;
 	}
 	return (1);
@@ -60,24 +73,29 @@ static int	receive_end_signal(void)
  *			- In both cases, error out
  * 5. Send last handshake byte
  *		- This is to help server confirm that everything is ok
-*/
+ */
 void	minitalk_client(char *msg, size_t msg_len, int server)
 {
+	int	ret;
+
 	if (send_pid_repeat(server))
 		error(ERR_CPID);
 	if (send_byte(server, HANDSHAKE))
 		error(ERR_CSTART);
 	if (send_msg_len(server, msg_len))
 		error(ERR_CLEN);
-	ret = send_msg(server, av[2]);
+	ret = send_msg(server, msg);
 	if (ret == 1)
 		error(ERR_CMSG);
 	else if (ret == 2)
+	{
+		g_response = 0;
 		error(ERR_CEARLY);
+	}
 	if (receive_end_signal())
 		error(ERR_CLATE);
 	if (send_byte(server, HANDSHAKE))
-		error(ERR_SEND);
+		error(ERR_CEND);
 }
 
 int	main(int ac, char **av)
@@ -85,14 +103,13 @@ int	main(int ac, char **av)
 	struct sigaction	act;
 	sigset_t			set;
 	int					server;
-	int					ret;
 
 	if (ac != 3)
 		return (0);
 	if (init_set(&set) || init_act(&act, set, sigusr_handler))
 		return (1);
 	server = ft_atoi(av[1]);
-	if (server <= 0)
+	if (server <= 0 || server > MAX_PID)
 		return (0);
 	minitalk_client(av[2], ft_strlen(av[2]), server);
 	if (VERBOSE)
