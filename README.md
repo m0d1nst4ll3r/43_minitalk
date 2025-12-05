@@ -1,5 +1,15 @@
 # 43\_minitalk
 
+### Post-grading update
+
+This project went well and is OK *but* it could be way better.
+
+Sigaction allows us to set some flags including siginfo (or something along those lines) which, amongst other things, allows you to get the pid of the signal's *sender*.
+
+Using this would allow us to improve the program by *a lot*. Wouldn't have to send the pid from the client bit by bit (how tedious), and could simultaneously receive messages from *multiple* clients all at once (like get_next_line does multiple fds).
+
+I could definitely, and actually will, redo this entirely with the new info. But the project is turned in now, so we've got no ETA.
+
 ### Notes
 
 Project went through a quick rewrite. Before, the server wouldn't verify much (not even if pid was < 0). The message would also be stored in a chained list.
